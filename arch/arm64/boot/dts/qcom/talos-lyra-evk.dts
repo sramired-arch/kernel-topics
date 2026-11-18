@@ -65,6 +65,22 @@
 		pinctrl-names = "default";
 	};
 
+	eth0_phy_vreg: regulator-eth0-phy {
+		compatible = "regulator-fixed";
+		regulator-name = "eth0_phy_pwr";
+		gpio = <&expander2 6 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		startup-delay-us = <10000>;
+	};
+
+	eth1_phy_vreg: regulator-eth1-phy {
+		compatible = "regulator-fixed";
+		regulator-name = "eth1_phy_pwr";
+		gpio = <&expander2 0 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		startup-delay-us = <10000>;
+	};
+
 	wifi-bt-connector {
 		compatible = "pcie-m2-e-connector";
 		vpcie3v3-supply = <&vreg_keye_3p3>;
@@ -212,6 +228,12 @@
 		reg = <0x38>;
 		#gpio-cells = <2>;
 		gpio-controller;
+		vcc-supply = <&vreg_1p8>;
+
+		gpio-line-names = "EXP_ETH1_PWR_EN", "EXP_ETH1_INT_N",
+				  "EXP_ETH1_RST_N", "EXP_ETH0_INT_N",
+				  "EXP_NVME_PLA_N", "EXP_NVME_PLN_N",
+				  "EXP_ETH0_PWR_EN", "EXP_ETH0_RST_N";
 	};
 
 	expander3: gpio@3c {
@@ -286,6 +308,8 @@
 
 		pinctrl-0 = <&tc9563_resx_state>;
 		pinctrl-names = "default";
+		aspm-no-l1;
+		aspm-no-l0s;
 
 		pcie@1,0 {
 			reg = <0x20800 0x0 0x0 0x0 0x0>;
@@ -323,6 +347,8 @@
 			device_type = "pci";
 			ranges;
 			bus-range = <0x5 0xff>;
+			aspm-no-l1;
+			aspm-no-l0s;
 
 			pci@0,0 {
 				reg = <0x50000 0x0 0x0 0x0 0x0>;
@@ -330,6 +356,12 @@
 				#size-cells = <2>;
 				device_type = "pci";
 				ranges;
+				aspm-no-l1;
+				aspm-no-l0s;
+				phy-mode = "sgmii";
+				phy-supply = <&eth0_phy_vreg>;
+				phy-reset-gpios = <&expander2 7 GPIO_ACTIVE_LOW>;
+				reset-deassert-us = <221000>;
 			};
 
 			pci@0,1 {
@@ -338,6 +370,12 @@
 				#size-cells = <2>;
 				device_type = "pci";
 				ranges;
+				aspm-no-l1;
+				aspm-no-l0s;
+				phy-mode = "sgmii";
+				phy-supply = <&eth1_phy_vreg>;
+				phy-reset-gpios = <&expander2 2 GPIO_ACTIVE_LOW>;
+				reset-deassert-us = <20000>;
 			};
 		};
 	};
